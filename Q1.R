@@ -25,12 +25,34 @@ library(AnnotationHub)
 # In other words, CpG Islands does not have a strand.
 
 ah <- AnnotationHub()
+ah <- subset(ah, genome == "hg19")
+ah <- subset(ah, dataprovider == "UCSC")
+ah <- query(ah, "CpG Islands")
+cpgIslands <- ah[[1]]
+cpgAuto <- keepSeqlevels(cpgIslands, c("chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", 
+                                          "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", 
+                                          "chr20", "chr21", "chr22"))
+cpgChr4 <- keepSeqlevels(cpgIslands, "chr4")
+length(cpgAuto)
+length(cpgChr4)
+
+###
+ah <- AnnotationHub()
 qah_h1 <- query(ah, c("E003", "H3K4me3"))
-qah_h2 <- query(ah, c("E003", "H3K27me3"))
-
 h1 <- qah_h1[[2]]
-h2 <- qah_h2[[2]]
+seqlevels(h1)
 h1 <- dropSeqlevels(h1, c("chrX", "chrY"))
-h2 <- dropSeqlevels(h2, c("chrX", "chrY"))
+sum(width(reduce(h1)))
 
-dropSeqlevels(h2, "chrY")
+####
+qah_h2 <- query(ah, c("E003", "H3K27me3"))
+h2 <- qah_h2[[2]]
+h2 <- dropSeqlevels(h2, c("chrX", "chrY"))
+mean(h2$signalValue)
+
+
+
+
+
+
+

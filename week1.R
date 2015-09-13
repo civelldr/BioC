@@ -193,6 +193,8 @@ gr <- GRanges(seqnames = "chr1", ranges = IRanges(start = 1:2, width = 2))
 ## ----seqStyle------------------------------------------------------------
 newStyle <- mapSeqlevels(seqlevels(gr), "NCBI")
 gr <- renameSeqlevels(gr, newStyle)
+
+##
 ###### AnnotationHub GRanges USE CASE
 ###
 
