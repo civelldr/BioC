@@ -3,27 +3,6 @@ library(rtracklayer)
 library(AnnotationHub)
 ###
 
-# In this assessment we will study features of the human genome, version "hg19".
-# We will only consider data which has been mapped to the autosomes (chr 1 to 22).
-# We will use data from the H1 cell line as assayed and quantified by the Roadmap Epigenomics project. 
-# The Roadmap Epigenomics project code for the H1 cell line is E003. 
-# For histone modification data, the Roadmap project makes several types of quantification available. 
-# We will use the co-called "narrowPeak" quantification.
-# # 
-# Note: This entire quiz is one long analysis, so later questions refer to results generated in earlier questions. 
-# Some biology Bivalent chromatin is marked by a combination of active and repressive histone marks. 
-# A number of slightly different definitions exists; we will say a region is bivalent if it is enriched in both H3K4me3 and H3K27me3. 
-# Note that histone modification marks does not have a strand.
-# # 
-# Bivalent chromatin has especially been considered in embryonic stem cells. 
-# An example of such a cell is the ENCODE Tier 1 cell line called H1. The Roadmap Epigenomics id for this cell line is "E003".
-# # 
-# We will examine the relationship between bivalent chromatin and CpG Islands. 
-# CpG Islands are clusters of many CpG (this is juts CG dinucleotides). 
-# Several definitions exists of what is an “CpG Island”; we will use the UCSC definition. 
-# Because the CG dinucleotide is its own reverse complement, a CpG cluster exists on the forward strand if and only if it exists on the reverse strand. 
-# In other words, CpG Islands does not have a strand.
-
 ah <- AnnotationHub()
 ah <- subset(ah, genome == "hg19")
 ah <- subset(ah, dataprovider == "UCSC")
@@ -50,9 +29,42 @@ h2 <- qah_h2[[2]]
 h2 <- dropSeqlevels(h2, c("chrX", "chrY"))
 mean(h2$signalValue)
 
+##
+bivReg <- intersect(h1, h2)
+sum(width(reduce(br)))
 
+####
+ov <- findOverlaps(bivReg, cpgAuto)
+# number of bivReg that have cpg islands in them
+length(unique(queryHits(ov))) / length(bivReg) 
+# the number of cpg islands that have bivReg in them 
+length(unique(subjectHits(ov))) / length(cpgAuto) 
+# perc of bivalent regions that overlap a cpgIsland
+length(subsetByOverlaps(bivReg, cpgAuto, ignore.strand = TRUE)) / length(bivReg)
 
+# bases which part of cpgAuto that are also part of the bivalent regions 
+sum(width(intersect(bivReg, cpgAuto, ignore.strand = TRUE))) / sum(width(reduce(cpgAuto)))
 
+####### How many bases are bivalently marked within 10kb of CpG Islands?
+cpgAuto_flank<- resize(cpgAuto,width=20000+width(cpgAuto),fix='center')
+ov <- intersect(cpgAuto_flank, bivReg, ignore.strand = TRUE)
 
+######
+g <- ah[[7]]  # Assembly
+g <- keepSeqlevels(g, c("chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", 
+                                       "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", 
+                                       "chr20", "chr21", "chr22"))
+gSize <- sum(as.numeric(seqlengths(g))) # hm....
+sum(width(reduce(cpgAuto, ignore.strand = T))) / gSize
 
-
+## odds ratio for the overlap of bivalent marks with CpG islands.
+inOut <- matrix(0, ncol = 2, nrow = 2)
+rownames(inOut) <- c("in", "out")
+colnames(inOut) <- c("in", "out")
+# number of items that are in common between both cpg and bivalent regions
+inOut[1,1] <- sum(width(intersect(cpgAuto, bivReg, ignore.strand=TRUE)))
+inOut[1,2] <- sum(width(setdiff(bivReg, cpgAuto, ignore.strand=TRUE)))
+inOut[2,1] <- sum(width(setdiff(cpgAuto, bivReg, ignore.strand=TRUE)))
+inOut[2,2] <- gSize - sum(inOut)
+or <- inOut[1,1] * inOut[2,2] / (inOut[2,1] * inOut[1,2]) 
+# i.e. 169x more enrichment of the bivalent regions contained within CpG Islands
