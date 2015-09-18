@@ -248,8 +248,8 @@ findOverlaps(gL, gr2)
 sessionInfo()
 
 ## ----dependencies, warning=FALSE, message=FALSE--------------------------
-library(GenomicFeatures)
-library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+   
+
 
 ## ----biocLite, eval=FALSE------------------------------------------------
 ## source("http://www.bioconductor.org/biocLite.R")
@@ -261,12 +261,14 @@ txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 txdb
 
 ## ----gr------------------------------------------------------------------
-gr <- GRanges(seqnames = "chr1", strand = "+", ranges = IRanges(start = 11874, end = 14409))
+gr <- GRanges(seqnames = "chr22", ranges = IRanges(start = 1, end = 999999999))
+subsetByOverlaps(transcripts(txdb), gr, ignore.strand = TRUE)
+
 subsetByOverlaps(genes(txdb), gr)
 subsetByOverlaps(genes(txdb), gr, ignore.strand = TRUE)
 
 ## ----transcripts---------------------------------------------------------
-subsetByOverlaps(transcripts(txdb), gr)
+
 
 ## ----exons---------------------------------------------------------------
 subsetByOverlaps(exons(txdb), gr)
@@ -303,7 +305,7 @@ ahub <- AnnotationHub()
 table(ahub$rdataclass)
 
 ## ----granges-------------------------------------------------------------
-ahub.gr <- subset(ahub, rdataclass == "GRanges" & species == "Homo sapiens")
+ahub.gr <- subset(ah, rdataclass == "GRanges" & species == "Homo sapiens")
 gr <- ahub.gr[[1]]
 gr
 seqinfo(gr)
@@ -324,9 +326,8 @@ out.rle <- import(bw, which = gr1, as = "Rle")
 out.rle
 
 ## ----importBigWig3-------------------------------------------------------
-gr.chr22 <- GRanges(seqnames = "chr22",
-                    ranges = IRanges(start = 1, end = seqlengths(gr)["chr22"]))
-out.chr22 <- import(bw, which = gr.chr22, as = "Rle")
+gr.chr22 <- GRanges(seqnames = "chr22", ranges = IRanges(start = 1, end = seqlengths(gr)["chr22"]))
+out.chr22 <- import(fc.sig, which = gr.chr22, as = "Rle")
 out.chr22[["chr22"]]
 
 ## ----liftOver------------------------------------------------------------
