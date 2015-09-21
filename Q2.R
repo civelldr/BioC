@@ -45,7 +45,7 @@ cor(fc.sig.mean, sv)
 
 ### (5)
 
-sum(rle.chr22 > 1)
+sum(rle.chr22 >= 1)
 
 # 10914671
 
