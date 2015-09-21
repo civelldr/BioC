@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-### (1)
-=======
-###
->>>>>>> df0b7cb4e752e91da08210cf6814a6dd4e5f7f69
 library(BSgenome)
 available.genomes()
 library(BSgenome.Hsapiens.UCSC.hg19)
@@ -14,10 +9,8 @@ validBaseCount <- letterFrequency(Hsapiens$chr22, "A") +
                   letterFrequency(Hsapiens$chr22, "T")
                    
 letterFrequency(Hsapiens$chr22, "GC") / validBaseCount
-<<<<<<< HEAD
 
 # 0.4798807
-
 
 ##### (2)
 ah <- AnnotationHub()
@@ -93,10 +86,6 @@ tl.chr22  <- tl.chr22[tl.chr22$cds_len > 0,]
 
 trans.eval <- gr.prom[mcols(gr.prom)$tx_id %in% tl.chr22$tx_id]
 
+sum(coverage(trans.eval) > 1)
 
- sum(coverage(trans.eval) > 1)
-
-
-
-=======
->>>>>>> df0b7cb4e752e91da08210cf6814a6dd4e5f7f69
+# 306920
