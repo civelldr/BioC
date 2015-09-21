@@ -13,6 +13,7 @@ letterFrequency(Hsapiens$chr22, "GC") / validBaseCount
 # 0.4798807
 
 ##### (2)
+library(AnnotationHub)
 ah <- AnnotationHub()
 qah_h1 <- query(ah, c("E003", "H3K27me3"))
 h1 <- qah_h1[[2]]
