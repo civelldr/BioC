@@ -31,7 +31,7 @@ mean(h2$signalValue)
 
 ##
 bivReg <- intersect(h1, h2)
-sum(width(reduce(br)))
+sum(width(reduce(bivReg)))
 
 ####
 ov <- findOverlaps(bivReg, cpgAuto)
@@ -48,9 +48,10 @@ sum(width(intersect(bivReg, cpgAuto, ignore.strand = TRUE))) / sum(width(reduce(
 ####### How many bases are bivalently marked within 10kb of CpG Islands?
 cpgAuto_flank<- resize(cpgAuto,width=20000+width(cpgAuto),fix='center')
 ov <- intersect(cpgAuto_flank, bivReg, ignore.strand = TRUE)
+sum(width(reduce(ov)))
 
 ######
-g <- ah[[7]]  # Assembly
+g <- ah[["AH5018"]]  # Assembly
 g <- keepSeqlevels(g, c("chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", 
                                        "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", 
                                        "chr20", "chr21", "chr22"))
@@ -67,4 +68,5 @@ inOut[1,2] <- sum(width(setdiff(bivReg, cpgAuto, ignore.strand=TRUE)))
 inOut[2,1] <- sum(width(setdiff(cpgAuto, bivReg, ignore.strand=TRUE)))
 inOut[2,2] <- gSize - sum(inOut)
 or <- inOut[1,1] * inOut[2,2] / (inOut[2,1] * inOut[1,2]) 
+or
 # i.e. 169x more enrichment of the bivalent regions contained within CpG Islands

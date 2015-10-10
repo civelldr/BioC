@@ -33,9 +33,9 @@ head(pData(ALL)$sex)
 head(ALL$sex)
 
 ## ----subset--------------------------------------------------------------
-ALL[,1:5]
-ALL[1:10,]
-ALL[1:10,1:5]
+ALL[,1:5]  # all 12k features, first 5 samples
+ALL[1:10,] # first 10 features, all samples
+ALL[1:10,1:5] # first 10 features, first 5 samples
 
 ## ----subset2-------------------------------------------------------------
 ALL[, c(3,2,1)]
@@ -43,15 +43,16 @@ ALL$sex[c(1,2,3)]
 ALL[, c(3,2,1)]$sex
 
 ## ----featureData---------------------------------------------------------
-featureData(ALL)
+featureData(ALL)  # seems to be null most of the time
 
 ## ----annotation----------------------------------------------------------
-ids <- featureNames(ALL)[1:5]
+ids <- featureNames(ALL)[1:5]  # these need to be mapped into gene symbols
 ids
 
 ## ----annotation2---------------------------------------------------------
 library(hgu95av2.db)
-as.list(hgu95av2ENTREZID[ids])
+as.list(hgu95av2ENTREZID[ids])  # this gets the entrez id's for the above ids for the features
+
 
 ## ----varLabels-----------------------------------------------------------
 pD <- phenoData(ALL)
@@ -66,6 +67,9 @@ varLabels(pD)[1:3]
 ## ----sessionInfo, echo=FALSE---------------------------------------------
 sessionInfo()
 
+###
+##### SummarizedExperiment 
+###
 
 ## ----dependencies, warning=FALSE, message=FALSE--------------------------
 library(GenomicRanges)
@@ -100,20 +104,20 @@ assays(airway)
 head(assay(airway, "counts"))
 
 ## ----rowRanges-----------------------------------------------------------
-length(rowRanges(airway))
+length(rowRanges(airway))  # one granges for each feature b/c each row is a gene
 dim(airway)
 rowRanges(airway)
 
 ## ----numberOfExons-------------------------------------------------------
 length(rowRanges(airway))
-sum(elementLengths(rowRanges(airway)))
+sum(elementLengths(rowRanges(airway)))  # number of exons b/c each grange are the exons for the features
 
 ## ----start---------------------------------------------------------------
 start(rowRanges(airway))
 start(airway)
 
 ## ----subsetByOverlaps----------------------------------------------------
-gr <- GRanges(seqnames = "1", ranges = IRanges(start = 1, end = 10^7))
+gr <- GRanges(seqnames = "1", ranges = IRanges(start = 1, end = 10^7))  # say a 10 MB region
 subsetByOverlaps(airway, gr)
 
 ## ----sessionInfo, echo=FALSE---------------------------------------------
@@ -139,7 +143,7 @@ names(pData(eData))
 
 ## ----getGEOsupp----------------------------------------------------------
 eList2 <- getGEOSuppFiles("GSE11675")
-eList2
+eListeList2
 tarArchive <- rownames(eList2)[1]
 tarArchive
 
@@ -164,8 +168,6 @@ ensembl
 
 ## ----getBMex-------------------------------------------------------------
 values <- c("202763_at","209310_s_at","207500_at")
-getBM(attributes = c("ensembl_gene_id", "affy_hg_u133_plus_2"),
-      filters = "affy_hg_u133_plus_2", values = values, mart = ensembl)
 
 ## ----listAttributes------------------------------------------------------
 attributes <- listAttributes(ensembl)
@@ -174,6 +176,8 @@ nrow(attributes)
 filters <- listFilters(ensembl)
 head(filters)
 nrow(filters)
+
+# i.e. just read browseVignettes("biomaRt")
 
 ## ----listPages-----------------------------------------------------------
 attributePages(ensembl)

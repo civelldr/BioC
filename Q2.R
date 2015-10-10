@@ -25,7 +25,7 @@ mean(letterFrequency(v1, "GC", as.prob = T))
 
 # 0.528866
 
-####### (3)
+####### (3) 
 
 sv <- mcols(v1)$signalValue
 gcFreq <- letterFrequency(v1, "GC", as.prob = T)
@@ -75,18 +75,31 @@ library(GenomicFeatures)
 library(TxDb.Hsapiens.UCSC.hg19.knownGene)
 txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 seqlevels(txdb, force=TRUE) <- c("chr22")
-#txdb.chr22 <- keepSeqlevels(txdb, "chr22")
-
 gr <- GRanges(seqnames = "chr22", ranges = IRanges(start = 1, end = 52330658))
 gr.trans.chr22 <- subsetByOverlaps(transcripts(txdb), gr, ignore.strand = TRUE)
-gr.trans.chr22
+length(gr.trans.chr22) 
 gr.prom <- promoters(gr.trans.chr22, upstream = 900, downstream = 100)
-
-tl.chr22 <- transcriptLengths(txdb.chr22, with.cds_len = TRUE) #rtn df
+tl.chr22 <- transcriptLengths(txdb, with.cds_len = TRUE) #rtn df
 tl.chr22  <- tl.chr22[tl.chr22$cds_len > 0,]
-
 trans.eval <- gr.prom[mcols(gr.prom)$tx_id %in% tl.chr22$tx_id]
-
 sum(coverage(trans.eval) > 1)
 
 # 306920
+
+library(AnnotationHub)
+library(GenomicFeatures)
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+seqlevels(txdb, force=TRUE) <- c("chr22")
+ahub <- AnnotationHub()
+ahub.gr <- subset(ahub, rdataclass == "GRanges" & species == "Homo sapiens")
+gr <- ahub.gr[[1]]
+
+gr <- GRanges(seqnames = "chr22", ranges = IRanges(start = 1, end = seqlengths(gr)["chr22"]))
+gr.trans.chr22 <- subsetByOverlaps(transcripts(txdb), gr, ignore.strand = TRUE)
+length(gr.trans.chr22)
+gr.prom <- promoters(gr.trans.chr22, upstream = 900, downstream = 100)
+tl.chr22 <- transcriptLengths(txdb, with.cds_len = TRUE) #rtn df
+tl.chr22  <- tl.chr22[tl.chr22$cds_len > 0,]
+trans.eval <- gr.prom[mcols(gr.prom)$tx_id %in% tl.chr22$tx_id]
+sum(coverage(trans.eval) > 1)
