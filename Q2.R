@@ -70,7 +70,7 @@ sum(width(comb_ir))
 
 # 1869937
 
-####### (7)
+####### (7) (new q10)
 library(GenomicFeatures)
 library(TxDb.Hsapiens.UCSC.hg19.knownGene)
 txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
@@ -103,3 +103,38 @@ tl.chr22 <- transcriptLengths(txdb, with.cds_len = TRUE) #rtn df
 tl.chr22  <- tl.chr22[tl.chr22$cds_len > 0,]
 trans.eval <- gr.prom[mcols(gr.prom)$tx_id %in% tl.chr22$tx_id]
 sum(coverage(trans.eval) > 1)
+
+
+### new (7)
+
+ah <- AnnotationHub()
+ah <- subset(ah, genome == "hg19")
+ah <- subset(ah, dataprovider == "UCSC")
+# write.csv(mcols(ah), "ah.csv")
+# g <- ah[["AH5018"]] # assembly
+cpg <- ah[["AH5086"]] # CpG islands
+cpg_chr22 <- keepSeqlevels(cpg, "chr22")
+v_cpg_chr22 <- Views(Hsapiens, cpg_chr22)
+# gchr22 <- keepSeqlevels(g, "chr22")
+# Hschr22 <- Hsapiens$chr22 # actually chr22 sequence
+
+# for some reason the as.prob isn't working...
+oe <- dinucleotideFrequency(v_cpg_chr22, as.prob = T)[,7] / (letterFrequency(v_cpg_chr22, "C", as.prob = T) * letterFrequency(v_cpg_chr22, "G", as.prob = T))
+# mean(oe)
+
+oe2 <- (dinucleotideFrequency(v_cpg_chr22)[,7] / width(v_cpg_chr22)) /  
+  (letterFrequency(v_cpg_chr22, "C") / width(v_cpg_chr22)  * letterFrequency(v_cpg_chr22, "G") / width(v_cpg_chr22))
+mean(oe2)
+
+### (8)
+dnaseq <- DNAString("TATAAA")
+countPattern(dnaseq, Hsapiens$chr22) + countPattern(dnaseq, reverseComplement(Hsapiens$chr22))
+
+### (9)
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+seqlevels(txdb, force=TRUE) <- c("chr22")
+# trans.eval  <- from earlier
+v_prom <- Views(Hsapiens$chr22, start=start(trans.eval), end=end(trans.eval))
+countPattern(dnaseq, v_prom)
+# beats me but answer within 2
+
