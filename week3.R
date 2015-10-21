@@ -10,30 +10,30 @@ library(hgu95av2.db)
 ## ----ALL-----------------------------------------------------------------
 library(ALL)
 data(ALL)
-ALL
+ALL # expressionset 
 
 ## ----help, eval=FALSE----------------------------------------------------
-## ?ALL
+?ALL
 
 ## ----experimentData------------------------------------------------------
 experimentData(ALL)
 
 ## ----exprs---------------------------------------------------------------
-exprs(ALL)[1:4, 1:4]
+exprs(ALL)[1:4, 1:4]  # just first 4 rows and cols
 
 ## ----names---------------------------------------------------------------
 head(sampleNames(ALL))
 head(featureNames(ALL))
 
 ## ----pData---------------------------------------------------------------
-head(pData(ALL))
+head(pData(ALL))  #covar about the samples
 
 ## ----dollar--------------------------------------------------------------
 head(pData(ALL)$sex)
-head(ALL$sex)
+head(ALL$sex)  # $ opertor can be used directly on the ExpressionSet
 
 ## ----subset--------------------------------------------------------------
-ALL[,1:5]  # all 12k features, first 5 samples
+ALL[,1:5]  # all 12k features, first 5 samples  $ FIRST DIM FEATURES, SECOND DIM SAMPLES
 ALL[1:10,] # first 10 features, all samples
 ALL[1:10,1:5] # first 10 features, first 5 samples
 
@@ -55,7 +55,7 @@ as.list(hgu95av2ENTREZID[ids])  # this gets the entrez id's for the above ids fo
 
 
 ## ----varLabels-----------------------------------------------------------
-pD <- phenoData(ALL)
+pD <- phenoData(ALL)  ## so basically just use pData!  i.e. pData(ALL[,5])  (pData for sample5)
 varLabels(pD)
 
 ## ----varLabels2----------------------------------------------------------
@@ -68,7 +68,7 @@ varLabels(pD)[1:3]
 sessionInfo()
 
 ###
-##### SummarizedExperiment 
+##### SummarizedExperiment (newer version of expressionset)
 ###
 
 ## ----dependencies, warning=FALSE, message=FALSE--------------------------
@@ -85,13 +85,14 @@ data(airway)
 airway
 
 ## ----colData-------------------------------------------------------------
-colData(airway)
+colData(airway)  # this returns a DataFrame and was pData in ExpressionSet
 
 ## ----getColumn-----------------------------------------------------------
 airway$cell
 
-## ----exptData------------------------------------------------------------
+## ----exptData- Experiment data----------------------------------------------
 exptData(airway)
+as.list(exptData(airway))
 
 ## ----names---------------------------------------------------------------
 colnames(airway)
@@ -99,12 +100,14 @@ head(rownames(airway))
 
 ## ----assay---------------------------------------------------------------
 airway
-assayNames(airway)
+assayNames(airway)  #there is 1 and it's called "counts"
 assays(airway)
-head(assay(airway, "counts"))
+head(assay(airway, "counts"))[1:4, 1:4]  # first 4 features and samples
 
 ## ----rowRanges-----------------------------------------------------------
 length(rowRanges(airway))  # one granges for each feature b/c each row is a gene
+rowRanges(airway) # returns a list, and each element in the list is a list of exons for a gene
+
 dim(airway)
 rowRanges(airway)
 
@@ -118,7 +121,7 @@ start(airway)
 
 ## ----subsetByOverlaps----------------------------------------------------
 gr <- GRanges(seqnames = "1", ranges = IRanges(start = 1, end = 10^7))  # say a 10 MB region
-subsetByOverlaps(airway, gr)
+subsetByOverlaps(airway, gr) # genes inside airways that overlap the above gr
 
 ## ----sessionInfo, echo=FALSE---------------------------------------------
 sessionInfo()
