@@ -21,10 +21,42 @@ sum(counts >= 1)
 library(GenomicFeatures)
 library(TxDb.Hsapiens.UCSC.hg19.knownGene)
 txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
-txdb_auto <- keepSeqlevels(txdb, c("chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", 
-                                       "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", 
-                                       "chr20", "chr21", "chr22"))
-exons <- exons(txdb_auto)
-subset <- subsetByOverlaps(airway, exons)  # problem is that exons use "chr22" and airway is only "22" so need to remember how to convert
+exons <- exons(txdb)
+auto_ucsc <- extractSeqlevelsByGroup(species="Homo sapiens", style="UCSC", group="auto")
+exons <- keepSeqlevels(exons, auto_ucsc)
+ncbiStyleLevels <- mapSeqlevels(seqlevels(exons),"NCBI")
+exons <- renameSeqlevels(exons, newStyle)
+subset <- subsetByOverlaps(airway, exons) 
+dim(subset)
 
+#(9) 
+colnames(airway)  # SRR1039508 is sample 1
+sample_1 <- airway[,1]
+subset_sample_1 <- subsetByOverlaps(sample_1, exons) # from above (8)
+counts <- assay(sample_1, "counts")
+subset_sample_1_counts <- assay(subset_sample_1, "counts")
+sum(subset_sample_1_counts) / sum(counts)
 
+#(10) dividing subset_sample_1 into expressed and non-expressed.  expr should be marked by H3K4me3 at promoter
+# Obtain the H3K4me3 narrowPeaks from the E096 sample using the AnnotationHub package
+library(AnnotationHub)
+ah <- AnnotationHub()
+qah_h1 <- query(ah, c("E096", "H3K4me3"))
+h1 <- qah_h1[["AH30596"]] # AH30596 | E096-H3K4me3.narrowPeak.gz 
+h1 <- keepSeqlevels(h1, auto_ucsc)
+h1 <- promoters(h1)
+h1 <- renameSeqlevels(h1, newStyle)
+
+transcripts <- transcripts(txdb)
+auto_ucsc <- extractSeqlevelsByGroup(species="Homo sapiens", style="UCSC", group="auto")
+transcripts <- keepSeqlevels(transcripts, auto_ucsc)
+ncbiStyleLevels <- mapSeqlevels(seqlevels(transcripts),"NCBI")
+transcripts <- renameSeqlevels(transcripts, newStyle)
+p <- promoters(transcripts)
+
+subset_sample_1 <- subsetByOverlaps(sample_1, transcripts) 
+subset_sample_1 <- subsetByOverlaps(subset_sample_1, h1)
+
+subset_sample_1_counts <- assay(subset_sample_1, "counts")
+median(subset_sample_1_counts)
+median(subset_sample_1_counts[subset_sample_1_counts > 0])

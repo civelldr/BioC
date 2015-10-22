@@ -305,7 +305,7 @@ ahub <- AnnotationHub()
 table(ahub$rdataclass)
 
 ## ----granges-------------------------------------------------------------
-ahub.gr <- subset(ah, rdataclass == "GRanges" & species == "Homo sapiens")
+ahub.gr <- subset(ahub, rdataclass == "GRanges" & species == "Homo sapiens")
 gr <- ahub.gr[[1]]
 gr
 seqinfo(gr)
