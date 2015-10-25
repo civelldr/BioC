@@ -145,6 +145,7 @@ eData
 names(pData(eData))
 
 ## ----getGEOsupp----------------------------------------------------------
+# raw data is called supplementary 
 eList2 <- getGEOSuppFiles("GSE11675")
 eListeList2
 tarArchive <- rownames(eList2)[1]
@@ -170,8 +171,12 @@ ensembl <- useDataset("hsapiens_gene_ensembl", mart)
 ensembl
 
 ## ----getBMex-------------------------------------------------------------
-values <- c("202763_at","209310_s_at","207500_at")
+values <- c("202763_at","209310_s_at","207500_at") # ids from affy arrays
 
+# linking probe ID's to gene ID's
+
+getBM(attributes = c("ensembl_gene_id", "affy_hg_u133_plus_2"),
+      filters = "affy_hg_u133_plus_2", values = values, mart = ensembl)
 ## ----listAttributes------------------------------------------------------
 attributes <- listAttributes(ensembl)
 head(attributes)
