@@ -152,28 +152,34 @@ exprs(normData)[1:4,1:3]
 sessionInfo()
 
 ## ----dependencies, warning=FALSE, message=FALSE--------------------------
-library(limma) # linear models for microarrays
+library(limma) # linear models for microarrays, what is used for continuous data.  for count data, edgeR, DEseq...
 library(leukemiasEset)
+# borrowing information across genes.  emperical based methods 
+# modeling the relationship gene expression and variance of the gene, you gain power by using these techniques
 
 ## ----biocLite, eval=FALSE------------------------------------------------
 ## source("http://www.bioconductor.org/biocLite.R")
 ## biocLite(c("limma", "leukemiasEset"))
 
 ## ----load----------------------------------------------------------------
-library(leukemiasEset)
 data(leukemiasEset)
 leukemiasEset
 table(leukemiasEset$LeukemiaType)
 
 ## ----subset--------------------------------------------------------------
-ourData <- leukemiasEset[, leukemiasEset$LeukemiaType %in% c("ALL", "NoL")]
-ourData$LeukemiaType <- factor(ourData$LeukemiaType)
+ourData <- leukemiasEset[, leukemiasEset$LeukemiaType %in% c("ALL", "NoL")]  # let's just compare ALL with NoL
+# a two group comparison
+ourData$LeukemiaType <- factor(ourData$LeukemiaType) 
+
+# first factor should be reference level, why didn't he do this?
+# ourData$LeukemiaType <- relevel(ourData$LeukemiaType, "NoL")
 
 ## ----limma---------------------------------------------------------------
 design <- model.matrix(~ ourData$LeukemiaType)
-fit <- lmFit(ourData, design)
-fit <- eBayes(fit)
-topTable(fit)
+fit <- lmFit(ourData, design) # sep model from hypothesis, 2 group of 24.  H1 no diff bet NoL and ALL
+fit <- eBayes(fit) # variability of the gene is a mixture of gene specific variability and global varibility assuming
+# that all genes have the same variability
+topTable(fit) # do the two groups have the same expr level
 
 ## ----level---------------------------------------------------------------
 ourData$LeukemiaType
@@ -199,7 +205,7 @@ colnames(design2) <- c("ALL", "NoL")
 ## ----design4-------------------------------------------------------------
 fit2 <- lmFit(ourData, design2)
 contrast.matrix <- makeContrasts("ALL-NoL", levels = design2)
-contrast.matrix
+contrast.matrix # whether nor not the two parameters are = to zero
 
 ## ----cont.fit------------------------------------------------------------
 fit2C <- contrasts.fit(fit2, contrast.matrix)
