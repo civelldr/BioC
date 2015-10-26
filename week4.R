@@ -1,5 +1,5 @@
 ## ----dependencies, warning=FALSE, message=FALSE--------------------------
-library(ShortRead)
+library(ShortRead)  # best way to read in FASTQ files
 
 ## ----biocLite, eval=FALSE------------------------------------------------
 ## source("http://www.bioconductor.org/biocLite.R")
@@ -7,6 +7,7 @@ library(ShortRead)
 
 ## ----fastq1--------------------------------------------------------------
 fastqDir <- system.file("extdata", "E-MTAB-1147", package = "ShortRead")
+fastqDir
 fastqPath <- list.files(fastqDir, pattern = ".fastq.gz$", full = TRUE)[1]
 reads <- readFastq(fastqPath)
 reads
@@ -22,7 +23,7 @@ quality(reads)[1:2]
 id(reads)[1:2]
 
 ## ----convertQual---------------------------------------------------------
-as(quality(reads), "matrix")[1:2,1:10]
+qm <- as(quality(reads), "matrix")
 
 ## ----sessionInfo, echo=FALSE---------------------------------------------
 sessionInfo()
@@ -50,12 +51,13 @@ class(aln)
 ## ----lookAtBam-----------------------------------------------------------
 aln <- aln[[1]]
 names(aln)
-lapply(aln, function(xx) xx[1])
+lapply(aln, function(xx) xx[1])  # first element of each name
+aln$seq
 
 ## ----yieldSize-----------------------------------------------------------
-yieldSize(bamFile) <- 1
+yieldSize(bamFile) <- 1  # means that every time you call scanBam you get one read
 open(bamFile)
-scanBam(bamFile)[[1]]$seq
+scanBam(bamFile)[[1]]$seq  # essentially this is iterating over the bamfile
 scanBam(bamFile)[[1]]$seq
 ## Cleanup
 close(bamFile)
@@ -65,9 +67,11 @@ yieldSize(bamFile) <- NA
 gr <- GRanges(seqnames = "seq2",
               ranges = IRanges(start = c(100, 1000), end = c(1500,2000)))
 params <- ScanBamParam(which = gr, what = scanBamWhat())
+scanBamWhat() # which pieces of the bam file we want to read in
 aln <- scanBam(bamFile, param = params)
 names(aln)
-head(aln[[1]]$pos)
+aln[[1]]$pos
+head(aln[[1]]$pos) # reads are long, so the left most overlap the positions of the granges we provided
 
 ## ----summary-------------------------------------------------------------
 quickBamFlagSummary(bamFile)
@@ -87,7 +91,7 @@ names(aln[[1]])
 sessionInfo()
 
 ## ----dependencies, warning=FALSE, message=FALSE--------------------------
-library(oligo)
+library(oligo) # affy and nimblegen arrays GE and snp arrays
 library(GEOquery)
 
 ## ----biocLite, eval=FALSE------------------------------------------------
@@ -96,10 +100,13 @@ library(GEOquery)
 
 ## ----getData-------------------------------------------------------------
 library(GEOquery)
-getGEOSuppFiles("GSE38792")
+getGEOSuppFiles("GSE38792") # remember, raw data is in supplementary
+
+# probset group of probes that all measure the same target
+
 list.files("GSE38792")
 untar("GSE38792/GSE38792_RAW.tar", exdir = "GSE38792/CEL")
-list.files("GSE38792/CEL")
+list.files("GSE38792/CEL") # samples from control to samples with sleep apnea
 
 ## ----readData, message=FALSE---------------------------------------------
 library(oligo)
@@ -107,16 +114,16 @@ celfiles <- list.files("GSE38792/CEL", full = TRUE)
 rawData <- read.celfiles(celfiles)
 
 ## ----show----------------------------------------------------------------
-rawData
+rawData  # pd.hugene.1.0.st.v1  human gene vs 1 based on random priming
 
 ## ----getClass------------------------------------------------------------
 getClass("GeneFeatureSet")
 
 ## ----rawPeak-------------------------------------------------------------
-exprs(rawData)[1:4,1:3]
+exprs(rawData)[1:4,1:3] # values indicate that it's raw intensity measurements 16 bit scanner, 0 - 2^16
 
 ## ----maxExpr-------------------------------------------------------------
-max(exprs(rawData))
+max(exprs(rawData)) # 65534 means there's basically a prob that maxes it out, so if we log2 it we'll get a value between 1 and 16
 
 ## ----pData---------------------------------------------------------------
 filename <- sampleNames(rawData)
@@ -129,20 +136,23 @@ pData(rawData)$group <- ifelse(grepl("^OSA", sampleNames(rawData)),
 pData(rawData)
 
 ## ----rawBox, plot=TRUE---------------------------------------------------
-boxplot(rawData)
+boxplot(rawData) # sumary of the dist of of the intensity of each array.  y axis is on the log scale, so a different of 1 or 2 is 
+# a massive differences.  what about those little three?  maybe nothing hybridized to them...
 
 ## ----rma-----------------------------------------------------------------
-normData <- rma(rawData)
+normData <- rma(rawData)  # robust multichip average algo, all the probes that measure the same thing have been summarized
 normData
+featureNames(normData)[1:10]
 
 ## ----normBox, plot=TRUE--------------------------------------------------
-boxplot(normData)
+boxplot(normData)  # same mean, same spread, ready for analysis
+exprs(normData)[1:4,1:3]
 
 ## ----sessionInfo, echo=FALSE---------------------------------------------
 sessionInfo()
 
 ## ----dependencies, warning=FALSE, message=FALSE--------------------------
-library(limma)
+library(limma) # linear models for microarrays
 library(leukemiasEset)
 
 ## ----biocLite, eval=FALSE------------------------------------------------
