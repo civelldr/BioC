@@ -64,8 +64,7 @@ close(bamFile)
 yieldSize(bamFile) <- NA
 
 ## ----ScanBamParams-------------------------------------------------------
-gr <- GRanges(seqnames = "seq2",
-              ranges = IRanges(start = c(100, 1000), end = c(1500,2000)))
+gr <- GRanges(seqnames = "seq2", ranges = IRanges(start = c(100, 1000), end = c(1500,2000)))
 params <- ScanBamParam(which = gr, what = scanBamWhat())
 scanBamWhat() # which pieces of the bam file we want to read in
 aln <- scanBam(bamFile, param = params)
@@ -304,18 +303,19 @@ dge$genes <- data.frame(name = names(rowRanges(airway)),
                         stringsAsFactors = FALSE)
 
 ## ----calcNormFactors-----------------------------------------------------
-dge <- calcNormFactors(dge)
+dge <- calcNormFactors(dge) # effective library size, used to use total number of mapped reads
+dge$samples # now has norm.factors
 
 ## ----disp----------------------------------------------------------------
 design <- model.matrix(~dge$samples$group)
-dge <- estimateGLMCommonDisp(dge, design)
+dge <- estimateGLMCommonDisp(dge, design) # assuming that the dispersion is the same for all genes
 dge <- estimateGLMTagwiseDisp(dge, design)
 
 ## ----edgeRdesign---------------------------------------------------------
 fit <- glmFit(dge, design)
 
 ## ----glmLRT--------------------------------------------------------------
-lrt <- glmLRT(fit, coef = 2)
+lrt <- glmLRT(fit, coef = 2) # the second coeff in the design matrix, your treatment, 
 topTags(lrt)
 
 ## ----DESeq2setup---------------------------------------------------------
