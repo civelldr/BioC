@@ -34,3 +34,23 @@ sum(aln$pos %in% duplicatedValues)  # 129
 ## another way to do it..
 table(table(aln$pos))  # shows 198 values with only 1 position, and 49 with > 1 position
 length(aln$pos) - 198 # 129 positions overall with 1 or more 
+
+#(4)
+library(GenomicRanges)
+bpaths <- list.files(system.file("bam", package="leeBamViews"), pattern = "bam$", full=TRUE)
+gr <- GRanges(seqnames = "Scchr13", ranges = IRanges(start = 807762, end = 808068))
+# Scchr13:807762-808068
+## ----BamViews------------------------------------------------------------
+bamView <- BamViews(bpaths)
+bamRanges(bamView) <- gr
+aln <- scanBam(bamView)
+names(aln)
+names(aln[[1]])
+
+lens <- list()
+for(i in 1:length(aln)) {
+  lens[i] <- length(aln[[i]][[1]]$seq)
+}
+
+mean(unlist(lens)) # 90.25
+
