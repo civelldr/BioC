@@ -54,3 +54,54 @@ for(i in 1:length(aln)) {
 
 mean(unlist(lens)) # 90.25
 
+#(5)
+library(oligo) # affy and nimblegen arrays GE and snp arrays
+library(GEOquery)
+geoMat <- getGEO("GSE38792")
+pD.all <- pData(geoMat[[1]])
+getGEOSuppFiles("GSE38792") # remember, raw data is in supplementary
+list.files("GSE38792")
+untar("GSE38792/GSE38792_RAW.tar", exdir = "GSE38792/CEL")
+list.files("GSE38792/CEL") # samples from control to samples with sleep apnea
+celfiles <- list.files("GSE38792/CEL", full = TRUE)
+
+rawData <- read.celfiles(celfiles)
+rawData  # pd.hugene.1.0.st.v1  human gene vs 1 based on random priming
+
+filename <- sampleNames(rawData)
+pData(rawData)$filename <- filename
+sampleNames <- sub(".*_", "", filename)
+sampleNames <- sub(".CEL.gz$", "", sampleNames)
+sampleNames(rawData) <- sampleNames
+pData(rawData)$group <- ifelse(grepl("^OSA", sampleNames(rawData)),"OSA", "Control")
+pData(rawData)
+
+normData <- rma(rawData)
+expr <- exprs(normData)
+mean(expr["8149273",1:8])  # 7.0218
+
+#(6)
+library(limma)
+design <- model.matrix(~ normData$group)
+fit <- lmFit(normData, design)
+fit <- eBayes(fit)
+topTable(fit)
+abs(topTable(fit, n=1)$logFC)
+
+#(7)
+topTable(fit, p.value = 0.05)  # I think that's adj  0
+
+#(8)
+library(minfi)
+require(minfiData)
+data(RGsetEx)
+p <- preprocessFunnorm(RGsetEx)
+b <- getBeta(p)
+is <- getIslandStatus(p)
+pData(p)$status
+norm <- b[,c(1,2,5)]
+can <- b[,c(3,4,6)]
+norm_os <- norm[is == "OpenSea",]
+can_os <- can[is == "OpenSea",]
+mean(norm_os) - mean(can_os)
+
