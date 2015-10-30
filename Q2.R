@@ -138,3 +138,5 @@ v_prom <- Views(Hsapiens$chr22, start=start(trans.eval), end=end(trans.eval))
 countPattern(dnaseq, v_prom)
 # beats me but answer within 2
 
+##(10)
+

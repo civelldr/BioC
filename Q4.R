@@ -86,7 +86,7 @@ design <- model.matrix(~ normData$group)
 fit <- lmFit(normData, design)
 fit <- eBayes(fit)
 topTable(fit)
-abs(topTable(fit, n=1)$logFC)
+abs(topTable(fit, n=1)$logFC) # 0.7126
 
 #(7)
 topTable(fit, p.value = 0.05)  # I think that's adj  0
@@ -103,5 +103,42 @@ norm <- b[,c(1,2,5)]
 can <- b[,c(3,4,6)]
 norm_os <- norm[is == "OpenSea",]
 can_os <- can[is == "OpenSea",]
-mean(norm_os) - mean(can_os)
+mean(norm_os) - mean(can_os) # ] 0.08462511
 
+#(9) narrowPeak of Caco2 computed by AWG
+library(AnnotationHub)
+ah <- AnnotationHub()
+qah_h1 <- query(ah, c("Caco2", "AWG"))
+h <- qah_h1[["AH22442"]]
+
+sum(countOverlaps(p,h))  # 68183
+# 40151	(correct, but how...)
+
+
+ah_s <- subset(ah, genome == "hg19")
+ah_s <- subset(ah, dataprovider == "UCSC")
+# write.csv(mcols(ah), "ah.csv")
+# g <- ah[["AH5018"]] # assembly
+cpg <- ah_s[["AH5086"]] # CpG islands
+
+h_cpg <- subsetByOverlaps(cpg, h)
+ov <- subsetByOverlaps(h_cpg, p)
+
+
+#(10)
+library(DESeq2)
+library(zebrafishRNASeq)
+data(zfGenes)
+
+#exclude spike-in controls
+tx <- zfGenes[grep("^ERCC", rownames(zfGenes), invert = T),]
+
+counts_mat <- as.matrix(tx)
+colData <- DataFrame(sampleID=colnames(tx), group=as.factor(c("control", "control", "control", "treatment", "treatment", "treatment")))
+
+ddsMat <- DESeqDataSetFromMatrix(counts_mat, colData, design = ~ group)
+ddsMat <- DESeq(ddsMat)
+res <- results(ddsMat)
+res <- res[order(res$padj),]
+sigRes <- subset(res, padj <= 0.05)
+dim(sigRes)  # 87
